@@ -28,7 +28,7 @@ steps:
     env:
       - "CLOUDSDK_COMPUTE_ZONE=us-central1-c"
       - "CLOUDSDK_CONTAINER_CLUSTER=gcp-devops-project"
-    args: ["apply", "-f", "k8s/gke.yaml", "-n", "gcp-devops-prod"]  # Correct file path
+    args: ["apply", "-f", "gke.yaml", "-n", "gcp-devops-prod"]  # Correct file path
 
 options:
   logging: CLOUD_LOGGING_ONLY
