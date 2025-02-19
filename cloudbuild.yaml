@@ -1,21 +1,31 @@
 steps:
   # Build the container image
   - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-t", "gcr.io/$PROJECT_ID/gcpdevops", "."]
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/gcpdevops:latest", "."]
 
   # Push the container image
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/gcpdevops"]
+    args: ["push", "gcr.io/$PROJECT_ID/gcpdevops:latest"]
 
-  # Deploy the container image to GKE
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-      - run
-      - --filename=gke.yaml
-      - --image=gcr.io/$PROJECT_ID/gcpdevops
-      - --location=us-central1-c
-      - --cluster=gcp-devops-project
-      - --namespace=gcp-devops-prod
+    # Set the image in the Kubernetes Deployment  <--- This is the crucial addition
+  - name: "gcr.io/cloud-builders/kubectl"
+    args: ["set", "image", "deployment/gcp-devops-gke", "gcp-devops-gke=gcr.io/$PROJECT_ID/gcpdevops:latest", "-n", "gcp-devops-prod"] # Specify namespace  
+
+
+  # Apply the updated deployment and service (if needed)
+  - name: "gcr.io/cloud-builders/kubectl"
+    args: ["apply", "-f", "gke.yaml", "-n", "gcp-devops-prod"]  # Apply deployment
+ 
+
+  # # Deploy the container image to GKE
+  # - name: "gcr.io/cloud-builders/gke-deploy"
+  #   args:
+  #     - run
+  #     - --filename=gke.yaml
+  #     - --image=gcr.io/$PROJECT_ID/gcpdevops
+  #     - --location=us-central1-c
+  #     - --cluster=gcp-devops-project
+  #     - --namespace=gcp-devops-prod
 
 options:
   logging: CLOUD_LOGGING_ONLY
