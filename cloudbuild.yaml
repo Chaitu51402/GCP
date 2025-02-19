@@ -7,6 +7,11 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/gcpdevops:latest"]
 
+  # Authenticate kubectl to the cluster
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "gcloud"
+    args: ["container", "clusters", "get-credentials", "gcp-devops-project", "--region", "us-central1-c"] # Replace with your cluster name and region/zone
+
     # Set the image in the Kubernetes Deployment  <--- This is the crucial addition
   - name: "gcr.io/cloud-builders/kubectl"
     args: ["set", "image", "deployment/gcp-devops-gke", "gcp-devops-gke=gcr.io/$PROJECT_ID/gcpdevops:latest", "-n", "gcp-devops-prod"] # Specify namespace  
