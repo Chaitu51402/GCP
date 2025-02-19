@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: gcp-devops-gke
-        image: gcr.io/global-ace-450915-r9/gcpdevops:latest
+        image: gcr.io/global-ace-450915-r9/gcpdevops@sha256:<IMAGE_DIGEST>
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
