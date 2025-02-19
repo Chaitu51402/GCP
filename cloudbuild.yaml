@@ -9,28 +9,27 @@ steps:
 
   # Authenticate kubectl to the cluster
   - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "gcloud"
-    args: ["container", "clusters", "get-credentials", "gcp-devops-project", "--zone", "us-central1-c"] # Replace with your cluster name and region/zone
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud container clusters get-credentials gcp-devops-project --zone us-central1-c
+        echo "Cluster authentication successful"
 
-    # Set the image in the Kubernetes Deployment  <--- This is the crucial addition
+  # Set the image in the Kubernetes Deployment
   - name: "gcr.io/cloud-builders/kubectl"
-    args: ["set", "image", "deployment/gcp-devops-gke", "gcp-devops-gke=gcr.io/$PROJECT_ID/gcpdevops:latest", "-n", "gcp-devops-prod"] # Specify namespace  
+    env:
+      - "CLOUDSDK_COMPUTE_ZONE=us-central1-c"
+      - "CLOUDSDK_CONTAINER_CLUSTER=gcp-devops-project"
+    args: ["set", "image", "deployment/gcp-devops-gke", "gcp-devops-gke=gcr.io/$PROJECT_ID/gcpdevops:latest", "-n", "gcp-devops-prod"]
 
-
-  # Apply the updated deployment and service (if needed)
+  # Apply the updated deployment and service
   - name: "gcr.io/cloud-builders/kubectl"
-    args: ["apply", "-f", "gke.yaml", "-n", "gcp-devops-prod"]  # Apply deployment
- 
-
-  # # Deploy the container image to GKE
-  # - name: "gcr.io/cloud-builders/gke-deploy"
-  #   args:
-  #     - run
-  #     - --filename=gke.yaml
-  #     - --image=gcr.io/$PROJECT_ID/gcpdevops
-  #     - --location=us-central1-c
-  #     - --cluster=gcp-devops-project
-  #     - --namespace=gcp-devops-prod
+    env:
+      - "CLOUDSDK_COMPUTE_ZONE=us-central1-c"
+      - "CLOUDSDK_CONTAINER_CLUSTER=gcp-devops-project"
+    args: ["apply", "-f", "k8s/gke.yaml", "-n", "gcp-devops-prod"]  # Correct file path
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
