@@ -1,24 +1,20 @@
 steps:
-  # Build the container image, tagging with the short SHA
+  # build the container image
 - name: "gcr.io/cloud-builders/docker"
-  args: ["build", "-t", "gcr.io/$PROJECT_ID/gcpdevops:$SHORT_SHA", "."]
-
-  # Push the container image to GCR
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/gcpdevops", "."]
+  # push container image
 - name: "gcr.io/cloud-builders/docker"
-  args: ["push", "gcr.io/$PROJECT_ID/gcpdevops:$SHORT_SHA"]
-
-  # Set the image in the Kubernetes Deployment
-- name: 'gcr.io/cloud-builders/kubectl'
-  args: ['set', 'image', 'deployment/gcp-devops-gke', 'gcp-devops-gke=gcr.io/$PROJECT_ID/gcpdevops:$SHORT_SHA', '-n', 'gcp-devops-prod']
-  # Optional: Add context if needed (see previous examples)
-  # - context: ${_GKE_CLUSTER_CONTEXT}
-
-# Substitutions for flexibility (highly recommended)
-substitutions:
-  _GKE_LOCATION: us-central1-c  # Replace with your GKE cluster location
-  _GKE_CLUSTER: gcp-devops-project # Replace with your GKE cluster name
-  # _GKE_CLUSTER_CONTEXT: projects/$PROJECT_ID/locations/us-central1-c/clusters/gcp-devops-project # Example context
+  args: ["push", "gcr.io/$PROJECT_ID/gcpdevops"]
+  # deploy container image to GKE
+- name: "gcr.io/cloud-builders/gke-deploy"
+  args:
+  - run
+  - --filename=gke.yaml
+  - --image=gcr.io/$PROJECT_ID/gcpdevops
+  - --location=us-central1-c
+  - --cluster=gcp-devops-project
+  - --namespace=gcp-devops-prod
 
 options:
-  logging: CLOUD_LOGGING_ONLY
+  logging: CLOUD_LOGGING_ONLY  
 
