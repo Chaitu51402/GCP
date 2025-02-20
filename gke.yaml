@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gcp-devops-gke-dev
+  namespace: dev
 spec:
   replicas: 1
   selector:
@@ -14,12 +15,32 @@ spec:
     spec:
       containers:
       - name: gcp-devops-gke-dev
-        image: gcr.io/global-ace-450915-r9/gcpdevops-dev
+        image: gcr.io/global-ace-450915-r9/gcpdevops-dev:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         env:
-          - name: PORT
-            value: "5000"
+        - name: PORT
+          value: "5000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 3
+          periodSeconds: 5
 
 
 # apiVersion: "v1"
