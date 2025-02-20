@@ -7,15 +7,25 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/gcpdevops-dev:$SHORT_SHA"]
 
-  # Deploy the container image to GKE
-  - name: "gcr.io/cloud-builders/gke-deploy"
+  # Authenticate with GKE cluster
+  - name: "gcr.io/cloud-builders/kubectl"
     args:
-      - run
-      - --filename=gke.yaml
-      - --image=gcr.io/$PROJECT_ID/gcpdevops-dev:$SHORT_SHA
-      - --location=us-central1-c
-      - --cluster=gcp-devops-project
-      - --namespace=gcp-devops-dev
+      - "container"
+      - "clusters"
+      - "get-credentials"
+      - "gcp-devops-project"
+      - "--zone"
+      - "us-central1-c"
+      - "--project"
+      - "$PROJECT_ID"
+
+  # Apply the Kubernetes YAML file
+  - name: "gcr.io/cloud-builders/kubectl"
+    args: ["apply", "-f", "gke.yaml", "-n", "gcp-devops-dev"]
+
+  # Wait for Deployment rollout
+  - name: "gcr.io/cloud-builders/kubectl"
+    args: ["rollout", "status", "deployment/gcp-devops-gke-dev", "-n", "gcp-devops-dev"]
 
 options:
   logging: CLOUD_LOGGING_ONLY
